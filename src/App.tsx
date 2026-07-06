@@ -26,7 +26,7 @@ const CURRENT_CONFIG_KEY = 'socket-dashboard-current';
 function App() {
   const [configs, setConfigs] = useState<SocketConfig[]>([]);
   const [currentConfigId, setCurrentConfigId] = useState<string | null>(null);
-  const [serverUrl, setServerUrl] = useState('http://localhost:8000');
+  const [serverUrl, setServerUrl] = useState('http://localhost:8080');
   const [listeners, setListeners] = useState<ListenerConfig[]>([
     { id: 'default-listener', event: 'user_update', isActive: true },
   ]);
@@ -91,13 +91,23 @@ function App() {
     }
   }, [currentConfigId, configs]);
 
-  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info') => {
-    const id = Date.now().toString();
-    setToasts((prev) => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 2500);
+  const removeToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
+
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info') => {
+    const id = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    setToasts((prev) => {
+      const next = [...prev, { id, message, type }];
+      if (next.length > 3) {
+        return next.slice(next.length - 3);
+      }
+      return next;
+    });
+    setTimeout(() => {
+      removeToast(id);
+    }, 2500);
+  }, [removeToast]);
 
   const addLog = useCallback((event: string, data: unknown, direction: 'incoming' | 'outgoing') => {
     const entry: LogEntry = {
@@ -461,7 +471,7 @@ function App() {
         />
       )}
 
-      <ToastContainer toasts={toasts} />
+      <ToastContainer toasts={toasts} onClose={removeToast} />
     </div>
   );
 }

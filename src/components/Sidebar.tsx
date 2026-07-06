@@ -74,7 +74,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onChange={(e) => onChangeServerUrl(e.target.value)}
             disabled={connectionStatus === 'connected'}
             className="w-full px-2.5 py-1.5 text-sm bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
-            placeholder="http://localhost:8000"
+            placeholder="http://localhost:8080"
           />
         </div>
 
