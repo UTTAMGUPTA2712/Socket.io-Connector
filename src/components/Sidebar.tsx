@@ -41,21 +41,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   return (
     <div
-      className={`${showSettings ? 'w-80 border-r border-slate-700/50' : 'w-0 border-r-0'} transition-all duration-300 overflow-hidden bg-slate-850/40 flex flex-col`}
+      className={`${showSettings ? 'w-80 border-r border-slate-700/50' : 'w-0 border-r-0'} transition-all duration-300 overflow-hidden bg-slate-800/40 flex flex-col`}
     >
-      <div className="w-80 h-full flex flex-col p-4 gap-4 overflow-y-auto">
+      <div className="w-80 h-full flex flex-col p-4 gap-4 overflow-hidden">
         {/* Config Actions Row */}
         <div className="flex gap-2">
           <button
             onClick={onSaveConfigClick}
-            className="flex-1 px-2.5 py-1.5 text-xs bg-slate-700 hover:bg-slate-650 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm"
+            className="flex-1 px-2.5 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm"
           >
             <Save className="w-3.5 h-3.5" />
             Save
           </button>
           <button
             onClick={onOpenConfigClick}
-            className="flex-1 px-2.5 py-1.5 text-xs bg-slate-700 hover:bg-slate-655 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm"
+            className="flex-1 px-2.5 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm"
           >
             <FolderOpen className="w-3.5 h-3.5" />
             Open {savedConfigsCount > 0 && `(${savedConfigsCount})`}
@@ -90,7 +90,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={onDisconnect}
             disabled={connectionStatus === 'disconnected'}
-            className="flex-1 px-2 py-2 text-sm bg-slate-700 hover:bg-slate-650 disabled:bg-slate-800 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-1 shadow-sm"
+            className="flex-1 px-2 py-2 text-sm bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-1 shadow-sm"
           >
             <WifiOff className="w-4 h-4" />
             Disconnect
@@ -106,7 +106,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="border-t border-slate-700/50 my-1" />
 
         {/* Listeners Section */}
-        <div className="flex flex-col gap-2 flex-1 min-h-[220px]">
+        <div className="flex flex-col gap-2 flex-1 min-h-0">
           <div className="flex items-center justify-between">
             <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-400">
               <Radio className="w-3.5 h-3.5 text-blue-400" />
@@ -120,7 +120,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </button>
           </div>
 
-          <div className="space-y-1.5 max-h-[350px] overflow-y-auto pr-1">
+          <div className="flex-1 space-y-1.5 overflow-y-auto pr-1">
             {listeners.length === 0 ? (
               <p className="text-xs text-slate-500 italic text-center py-4">No listeners configured</p>
             ) : (
@@ -157,7 +157,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </div>
           {connectionStatus === 'connected' && (
-            <span className="text-[10px] text-slate-500 italic mt-1 leading-relaxed">
+            <span className="text-[10px] text-slate-500 italic mt-1 leading-relaxed shrink-0">
               * Listener modifications trigger automatic reconnection.
             </span>
           )}

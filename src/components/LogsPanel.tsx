@@ -91,7 +91,7 @@ export const LogsPanel: React.FC<LogsPanelProps> = ({
                     </button>
                   </div>
                 </div>
-                <pre className="text-[11px] font-mono text-slate-300 overflow-x-auto whitespace-pre-wrap break-words leading-relaxed max-h-[150px] overflow-y-auto bg-slate-955/20 p-1.5 rounded">
+                <pre className="text-[11px] font-mono text-slate-300 overflow-x-auto whitespace-pre-wrap break-words leading-relaxed max-h-[150px] overflow-y-auto bg-slate-950/20 p-1.5 rounded">
                   {JSON.stringify(log.data, null, 2)}
                 </pre>
               </div>

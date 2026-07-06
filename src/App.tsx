@@ -52,8 +52,9 @@ function App() {
   const socketRef = useRef<Socket | null>(null);
   const logsRef = useRef<HTMLDivElement>(null);
   const saveInputRef = useRef<HTMLInputElement>(null);
+  const isLoadedRef = useRef(false);
 
-  // Load configs from localStorage on mount
+  // Load configs and active state from localStorage on mount
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -62,12 +63,23 @@ function App() {
         const migrated = parsed.map(migrateConfig);
         setConfigs(migrated);
       }
-      const currentId = localStorage.getItem(CURRENT_CONFIG_KEY);
-      if (currentId) {
-        setCurrentConfigId(currentId);
+      const activeStateStr = localStorage.getItem('socket-dashboard-active-state');
+      if (activeStateStr) {
+        const activeState = JSON.parse(activeStateStr);
+        if (activeState.serverUrl) setServerUrl(activeState.serverUrl);
+        if (activeState.listeners) setListeners(activeState.listeners);
+        if (activeState.emitters) setEmitters(activeState.emitters);
+        if (activeState.currentConfigId) setCurrentConfigId(activeState.currentConfigId);
+      } else {
+        const currentId = localStorage.getItem(CURRENT_CONFIG_KEY);
+        if (currentId) {
+          setCurrentConfigId(currentId);
+        }
       }
     } catch {
       console.error('Failed to load configs from localStorage');
+    } finally {
+      isLoadedRef.current = true;
     }
   }, []);
 
@@ -90,6 +102,18 @@ function App() {
       }
     }
   }, [currentConfigId, configs]);
+
+  // Auto-save active state to localStorage on modification
+  useEffect(() => {
+    if (!isLoadedRef.current) return;
+    const activeState = {
+      serverUrl,
+      listeners,
+      emitters,
+      currentConfigId,
+    };
+    localStorage.setItem('socket-dashboard-active-state', JSON.stringify(activeState));
+  }, [serverUrl, listeners, emitters, currentConfigId]);
 
   const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));

@@ -48,7 +48,7 @@ export const EmittersPanel: React.FC<EmittersPanelProps> = ({
             <p className="text-sm font-medium">No emitters configured</p>
             <button
               onClick={onAddEmitter}
-              className="mt-3 px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 border border-slate-750 text-blue-400 rounded-lg transition-colors"
+              className="mt-3 px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 text-blue-400 rounded-lg transition-colors"
             >
               Create one now
             </button>
@@ -69,7 +69,7 @@ export const EmittersPanel: React.FC<EmittersPanelProps> = ({
                     type="text"
                     value={emitter.event}
                     onChange={(e) => onUpdateEmitterEvent(emitter.id, e.target.value)}
-                    className="bg-transparent border-0 border-b border-transparent hover:border-slate-650 focus:border-blue-500 focus:ring-0 text-sm font-mono text-white py-0.5 px-1 rounded flex-1 min-w-0"
+                    className="bg-transparent border-0 border-b border-transparent hover:border-slate-600 focus:border-blue-500 focus:ring-0 text-sm font-mono text-white py-0.5 px-1 rounded flex-1 min-w-0"
                     placeholder="event_name"
                   />
                 </div>
@@ -78,7 +78,7 @@ export const EmittersPanel: React.FC<EmittersPanelProps> = ({
                   <button
                     onClick={() => onEmit(emitter)}
                     disabled={connectionStatus !== 'connected'}
-                    className="flex items-center gap-1 px-3 py-1 text-xs bg-blue-600 hover:bg-blue-500 disabled:bg-slate-850 disabled:text-slate-600 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors shadow-sm"
+                    className="flex items-center gap-1 px-3 py-1 text-xs bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 disabled:text-slate-600 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors shadow-sm"
                     title={connectionStatus === 'connected' ? 'Emit event' : 'Connect to server to emit'}
                   >
                     <Zap className="w-3 h-3" />
@@ -117,7 +117,7 @@ export const EmittersPanel: React.FC<EmittersPanelProps> = ({
 
               {/* Card Body (Payload Area) */}
               {emitter.isExpanded && (
-                <div className="p-3 pt-0 border-t border-slate-750 bg-slate-900/30 rounded-b-xl">
+                <div className="p-3 pt-0 border-t border-slate-700 bg-slate-900/30 rounded-b-xl">
                   <label className="block text-[10px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider font-mono">
                     JSON Payload
                   </label>
@@ -125,7 +125,7 @@ export const EmittersPanel: React.FC<EmittersPanelProps> = ({
                     value={emitter.payload}
                     onChange={(e) => onUpdateEmitterPayload(emitter.id, e.target.value)}
                     rows={5}
-                    className="w-full p-2.5 text-xs bg-slate-900/80 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-650 focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono resize-y"
+                    className="w-full p-2.5 text-xs bg-slate-900/80 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono resize-y"
                     placeholder='{"key": "value"}'
                   />
                 </div>
