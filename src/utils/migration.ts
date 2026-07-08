@@ -3,7 +3,7 @@ import { SocketConfig } from '../types/socket';
 // Migration helper for old single-event config models
 export const migrateConfig = (config: any): SocketConfig => {
   return {
-    id: config.id || Date.now().toString() + Math.random(),
+    id: config.id ? String(config.id) : (Date.now().toString() + Math.random()),
     name: config.name || 'Unnamed Config',
     serverUrl: config.serverUrl || 'http://localhost:8080',
     listeners: Array.isArray(config.listeners)

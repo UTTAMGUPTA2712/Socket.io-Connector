@@ -1,5 +1,5 @@
 import React from 'react';
-import { Zap, Settings, Wifi, Radio, AlertCircle, WifiOff } from 'lucide-react';
+import { Zap, Settings, Wifi, Radio, AlertCircle, WifiOff, Edit2 } from 'lucide-react';
 import { ConnectionStatus } from '../types/socket';
 
 interface HeaderProps {
@@ -7,6 +7,7 @@ interface HeaderProps {
   connectionStatus: ConnectionStatus;
   showSettings: boolean;
   onToggleSettings: () => void;
+  onRenameConfig: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -14,6 +15,7 @@ export const Header: React.FC<HeaderProps> = ({
   connectionStatus,
   showSettings,
   onToggleSettings,
+  onRenameConfig,
 }) => {
   const getStatusConfig = () => {
     switch (connectionStatus) {
@@ -37,9 +39,16 @@ export const Header: React.FC<HeaderProps> = ({
         <Zap className="w-5 h-5 text-blue-400" />
         <span className="font-semibold text-white">Socket.IO Dashboard</span>
         {currentConfigName && (
-          <span className="text-xs px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded-full">
-            {currentConfigName}
-          </span>
+          <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-blue-500/10 border border-blue-500/20 text-blue-300 rounded-full">
+            <span className="text-xs font-medium">{currentConfigName}</span>
+            <button
+              onClick={onRenameConfig}
+              className="p-0.5 hover:text-white text-blue-400 transition-colors"
+              title="Rename configuration"
+            >
+              <Edit2 className="w-3 h-3" />
+            </button>
+          </div>
         )}
       </div>
       <div className="flex items-center gap-3">

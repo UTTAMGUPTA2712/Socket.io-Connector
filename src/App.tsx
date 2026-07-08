@@ -52,16 +52,17 @@ function App() {
   const socketRef = useRef<Socket | null>(null);
   const logsRef = useRef<HTMLDivElement>(null);
   const saveInputRef = useRef<HTMLInputElement>(null);
-  const isLoadedRef = useRef(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   // Load configs and active state from localStorage on mount
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
+      let loadedConfigs: SocketConfig[] = [];
       if (stored) {
         const parsed = JSON.parse(stored) as any[];
-        const migrated = parsed.map(migrateConfig);
-        setConfigs(migrated);
+        loadedConfigs = parsed.map(migrateConfig);
+        setConfigs(loadedConfigs);
       }
       const activeStateStr = localStorage.getItem('socket-dashboard-active-state');
       if (activeStateStr) {
@@ -69,17 +70,23 @@ function App() {
         if (activeState.serverUrl) setServerUrl(activeState.serverUrl);
         if (activeState.listeners) setListeners(activeState.listeners);
         if (activeState.emitters) setEmitters(activeState.emitters);
-        if (activeState.currentConfigId) setCurrentConfigId(activeState.currentConfigId);
+        if (activeState.currentConfigId) setCurrentConfigId(String(activeState.currentConfigId));
       } else {
         const currentId = localStorage.getItem(CURRENT_CONFIG_KEY);
-        if (currentId) {
-          setCurrentConfigId(currentId);
+        if (currentId && loadedConfigs.length > 0) {
+          const config = loadedConfigs.find((c) => String(c.id) === currentId);
+          if (config) {
+            setServerUrl(config.serverUrl);
+            setListeners(config.listeners || []);
+            setEmitters(config.emitters || []);
+            setCurrentConfigId(currentId);
+          }
         }
       }
     } catch {
       console.error('Failed to load configs from localStorage');
     } finally {
-      isLoadedRef.current = true;
+      setIsLoaded(true);
     }
   }, []);
 
@@ -87,25 +94,14 @@ function App() {
   useEffect(() => {
     if (configs.length > 0) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(configs));
+    } else if (isLoaded) {
+      localStorage.removeItem(STORAGE_KEY);
     }
-  }, [configs]);
-
-  // Load config when currentConfigId changes
-  useEffect(() => {
-    if (currentConfigId) {
-      const config = configs.find((c) => c.id === currentConfigId);
-      if (config) {
-        setServerUrl(config.serverUrl);
-        setListeners(config.listeners || []);
-        setEmitters(config.emitters || []);
-        localStorage.setItem(CURRENT_CONFIG_KEY, currentConfigId);
-      }
-    }
-  }, [currentConfigId, configs]);
+  }, [configs, isLoaded]);
 
   // Auto-save active state to localStorage on modification
   useEffect(() => {
-    if (!isLoadedRef.current) return;
+    if (!isLoaded) return;
     const activeState = {
       serverUrl,
       listeners,
@@ -113,7 +109,7 @@ function App() {
       currentConfigId,
     };
     localStorage.setItem('socket-dashboard-active-state', JSON.stringify(activeState));
-  }, [serverUrl, listeners, emitters, currentConfigId]);
+  }, [serverUrl, listeners, emitters, currentConfigId, isLoaded]);
 
   const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -346,7 +342,7 @@ function App() {
   const updateConfig = useCallback((id: string, name: string) => {
     setConfigs((prev) =>
       prev.map((c) =>
-        c.id === id
+        String(c.id) === id
           ? { ...c, name, serverUrl, listeners, emitters, updatedAt: new Date().toISOString() }
           : c
       )
@@ -355,7 +351,7 @@ function App() {
   }, [serverUrl, listeners, emitters, showToast]);
 
   const deleteConfig = useCallback((id: string) => {
-    setConfigs((prev) => prev.filter((c) => c.id !== id));
+    setConfigs((prev) => prev.filter((c) => String(c.id) !== id));
     if (currentConfigId === id) {
       setCurrentConfigId(null);
       localStorage.removeItem(CURRENT_CONFIG_KEY);
@@ -364,10 +360,32 @@ function App() {
   }, [currentConfigId, showToast]);
 
   const selectConfig = useCallback((id: string) => {
-    setCurrentConfigId(id);
-    setShowConfigModal(false);
-    showToast('Config loaded', 'success');
-  }, [showToast]);
+    const config = configs.find((c) => String(c.id) === id);
+    if (config) {
+      setCurrentConfigId(id);
+      setServerUrl(config.serverUrl);
+      setListeners(config.listeners || []);
+      setEmitters(config.emitters || []);
+      localStorage.setItem(CURRENT_CONFIG_KEY, id);
+      setShowConfigModal(false);
+      showToast(`Loaded "${config.name}"`, 'success');
+    }
+  }, [configs, showToast]);
+
+  const openSaveModal = useCallback((isNew: boolean = true) => {
+    if (isNew) {
+      setConfigName('');
+      setEditingConfigId(null);
+    } else if (currentConfigId) {
+      const config = configs.find((c) => String(c.id) === currentConfigId);
+      if (config) {
+        setConfigName(config.name);
+        setEditingConfigId(currentConfigId);
+      }
+    }
+    setShowSaveModal(true);
+    setTimeout(() => saveInputRef.current?.focus(), 50);
+  }, [currentConfigId, configs]);
 
   const handleSaveConfig = useCallback(() => {
     if (!configName.trim()) {
@@ -384,24 +402,54 @@ function App() {
     setEditingConfigId(null);
   }, [configName, editingConfigId, updateConfig, createConfig, showToast]);
 
-  const openSaveModal = useCallback((isNew: boolean = true) => {
-    if (isNew) {
-      setConfigName('');
-      setEditingConfigId(null);
-    } else if (currentConfigId) {
-      const config = configs.find((c) => c.id === currentConfigId);
+  const handleSaveConfigClick = useCallback(() => {
+    if (currentConfigId) {
+      setConfigs((prev) =>
+        prev.map((c) =>
+          String(c.id) === currentConfigId
+            ? { ...c, serverUrl, listeners, emitters, updatedAt: new Date().toISOString() }
+            : c
+        )
+      );
+      const config = configs.find((c) => String(c.id) === currentConfigId);
+      showToast(`Saved changes to "${config?.name || 'configuration'}"`, 'success');
+    } else {
+      openSaveModal(true);
+    }
+  }, [currentConfigId, serverUrl, listeners, emitters, configs, openSaveModal, showToast]);
+
+  const handleNewConfigClick = useCallback(() => {
+    setCurrentConfigId(null);
+    setServerUrl('http://localhost:8080');
+    setListeners([
+      { id: 'default-listener', event: 'user_update', isActive: true },
+    ]);
+    setEmitters([
+      {
+        id: 'default-emitter',
+        event: 'get_users',
+        payload: '{\n  "action": "list",\n  "limit": 10\n}',
+        isExpanded: false,
+      },
+    ]);
+    showToast('Cleared active config. Start editing to save as new.', 'info');
+  }, [showToast]);
+
+  const handleRenameConfigClick = useCallback(() => {
+    if (currentConfigId) {
+      const config = configs.find((c) => String(c.id) === currentConfigId);
       if (config) {
         setConfigName(config.name);
         setEditingConfigId(currentConfigId);
+        setShowSaveModal(true);
+        setTimeout(() => saveInputRef.current?.focus(), 50);
       }
     }
-    setShowSaveModal(true);
-    setTimeout(() => saveInputRef.current?.focus(), 50);
   }, [currentConfigId, configs]);
 
   const getCurrentConfigName = useCallback(() => {
     if (!currentConfigId) return null;
-    const config = configs.find((c) => c.id === currentConfigId);
+    const config = configs.find((c) => String(c.id) === currentConfigId);
     return config?.name ?? null;
   }, [currentConfigId, configs]);
 
@@ -427,6 +475,7 @@ function App() {
         connectionStatus={connectionStatus}
         showSettings={showSettings}
         onToggleSettings={() => setShowSettings(!showSettings)}
+        onRenameConfig={handleRenameConfigClick}
       />
 
       <div className="flex-1 flex overflow-hidden">
@@ -439,7 +488,8 @@ function App() {
           listeners={listeners}
           onConnect={handleConnect}
           onDisconnect={handleDisconnect}
-          onSaveConfigClick={() => openSaveModal(!currentConfigId)}
+          onSaveConfigClick={handleSaveConfigClick}
+          onNewConfigClick={handleNewConfigClick}
           onOpenConfigClick={() => setShowConfigModal(true)}
           savedConfigsCount={configs.length}
           onAddListener={addListener}
@@ -447,6 +497,7 @@ function App() {
           onUpdateListenerEvent={updateListenerEvent}
           onDeleteListener={deleteListener}
           onListenerBlur={handleListenerBlur}
+          currentConfigId={currentConfigId}
         />
 
         <EmittersPanel

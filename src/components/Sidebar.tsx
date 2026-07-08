@@ -1,5 +1,5 @@
 import React from 'react';
-import { Save, FolderOpen, Server, Wifi, WifiOff, Radio, X } from 'lucide-react';
+import { Save, FolderOpen, Server, Wifi, WifiOff, Radio, X, Plus } from 'lucide-react';
 import { ConnectionStatus, ListenerConfig } from '../types/socket';
 
 interface SidebarProps {
@@ -12,6 +12,7 @@ interface SidebarProps {
   onConnect: () => void;
   onDisconnect: () => void;
   onSaveConfigClick: () => void;
+  onNewConfigClick: () => void;
   onOpenConfigClick: () => void;
   savedConfigsCount: number;
   onAddListener: () => void;
@@ -19,6 +20,7 @@ interface SidebarProps {
   onUpdateListenerEvent: (id: string, event: string) => void;
   onDeleteListener: (id: string) => void;
   onListenerBlur: () => void;
+  currentConfigId: string | null;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -31,6 +33,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onConnect,
   onDisconnect,
   onSaveConfigClick,
+  onNewConfigClick,
   onOpenConfigClick,
   savedConfigsCount,
   onAddListener,
@@ -38,6 +41,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onUpdateListenerEvent,
   onDeleteListener,
   onListenerBlur,
+  currentConfigId,
 }) => {
   return (
     <div
@@ -47,8 +51,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Config Actions Row */}
         <div className="flex gap-2">
           <button
+            onClick={onNewConfigClick}
+            className="px-2.5 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm"
+            title="Start new configuration template"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            New
+          </button>
+          <button
             onClick={onSaveConfigClick}
             className="flex-1 px-2.5 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm"
+            title={currentConfigId ? 'Save changes directly to active configuration' : 'Save current configuration'}
           >
             <Save className="w-3.5 h-3.5" />
             Save
@@ -56,6 +69,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={onOpenConfigClick}
             className="flex-1 px-2.5 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm"
+            title="Open saved configuration"
           >
             <FolderOpen className="w-3.5 h-3.5" />
             Open {savedConfigsCount > 0 && `(${savedConfigsCount})`}
