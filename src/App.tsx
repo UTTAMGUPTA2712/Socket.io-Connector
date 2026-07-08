@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { io } from 'socket.io-client';
 import type { Socket } from 'socket.io-client';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
@@ -17,8 +18,7 @@ import {
   Toast,
 } from './types/socket';
 
-// @ts-expect-error - CDN global
-const getIo = () => window.io;
+const getIo = () => io;
 
 const STORAGE_KEY = 'socket-dashboard-configs';
 const CURRENT_CONFIG_KEY = 'socket-dashboard-current';
