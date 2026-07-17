@@ -459,6 +459,56 @@ function App() {
     setTimeout(() => setCopiedId(null), 1500);
   }, []);
 
+  const downloadJson = useCallback((data: unknown, filename: string) => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, []);
+
+  const exportConfig = useCallback((config: SocketConfig) => {
+    const safeName = config.name.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'config';
+    downloadJson(config, `${safeName}.socket-config.json`);
+    showToast(`Exported "${config.name}"`, 'success');
+  }, [downloadJson, showToast]);
+
+  const exportAllConfigs = useCallback(() => {
+    if (configs.length === 0) {
+      showToast('No configurations to export', 'error');
+      return;
+    }
+    downloadJson(configs, `socket-dashboard-configs-${Date.now()}.json`);
+    showToast(`Exported ${configs.length} configuration${configs.length > 1 ? 's' : ''}`, 'success');
+  }, [configs, downloadJson, showToast]);
+
+  const importConfigsFromFile = useCallback((file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result as string;
+        const parsed = JSON.parse(text);
+        const items = Array.isArray(parsed) ? parsed : [parsed];
+        if (items.length === 0) throw new Error('empty');
+        const imported: SocketConfig[] = items.map((item) => {
+          const migrated = migrateConfig(item);
+          return {
+            ...migrated,
+            id: Date.now().toString() + Math.random().toString(36).slice(2),
+            updatedAt: new Date().toISOString(),
+          };
+        });
+        setConfigs((prev) => [...prev, ...imported]);
+        showToast(`Imported ${imported.length} configuration${imported.length > 1 ? 's' : ''}`, 'success');
+      } catch {
+        showToast('Invalid configuration file', 'error');
+      }
+    };
+    reader.readAsText(file);
+  }, [showToast]);
+
   useEffect(() => {
     return () => {
       if (socketRef.current) {
@@ -527,6 +577,9 @@ function App() {
           currentConfigId={currentConfigId}
           onSelectConfig={selectConfig}
           onDeleteConfig={deleteConfig}
+          onExportConfig={exportConfig}
+          onExportAll={exportAllConfigs}
+          onImportFile={importConfigsFromFile}
           onClose={() => setShowConfigModal(false)}
         />
       )}

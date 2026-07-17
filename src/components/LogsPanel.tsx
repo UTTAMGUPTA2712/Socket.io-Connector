@@ -1,6 +1,7 @@
-import React from 'react';
-import { Radio, Trash2, Check, Copy } from 'lucide-react';
+import React, { useState } from 'react';
+import { Radio, Trash2, Check, Copy, Maximize2 } from 'lucide-react';
 import { LogEntry } from '../types/socket';
+import { LogDetailModal } from './LogDetailModal';
 
 interface LogsPanelProps {
   logs: LogEntry[];
@@ -17,6 +18,9 @@ export const LogsPanel: React.FC<LogsPanelProps> = ({
   onCopyLog,
   logsRef,
 }) => {
+  const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
+  const selectedLog = logs.find((l) => l.id === selectedLogId) || null;
+
   const formatTimestamp = (date: Date) => {
     // If timestamp is not a Date object (e.g. from JSON parse), construct it
     const d = date instanceof Date ? date : new Date(date);
@@ -56,16 +60,17 @@ export const LogsPanel: React.FC<LogsPanelProps> = ({
             {logs.map((log) => (
               <div
                 key={log.id}
-                className={`p-2.5 rounded-lg border ${
+                className={`p-2.5 rounded-lg border cursor-pointer ${
                   log.direction === 'outgoing'
                     ? 'bg-blue-500/5 border-blue-500/20'
                     : 'bg-emerald-500/5 border-emerald-500/20'
                 }`}
+                onClick={() => setSelectedLogId(log.id)}
               >
                 <div className="flex items-center justify-between mb-1.5">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
                     <span
-                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wide ${
+                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wide shrink-0 ${
                         log.direction === 'outgoing'
                           ? 'bg-blue-500/20 text-blue-400'
                           : 'bg-emerald-500/20 text-emerald-400'
@@ -73,15 +78,29 @@ export const LogsPanel: React.FC<LogsPanelProps> = ({
                     >
                       {log.direction === 'outgoing' ? 'OUT' : 'IN'}
                     </span>
-                    <span className="text-white font-mono text-xs font-semibold">{log.event}</span>
+                    <span className="text-white font-mono text-xs font-semibold truncate">{log.event}</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <span className="text-slate-500 text-[10px] font-mono">
                       {formatTimestamp(log.timestamp)}
                     </span>
                     <button
-                      onClick={() => onCopyLog(log.id, JSON.stringify(log.data, null, 2))}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedLogId(log.id);
+                      }}
                       className="p-0.5 text-slate-500 hover:text-white rounded transition-colors"
+                      title="View full response"
+                    >
+                      <Maximize2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCopyLog(log.id, JSON.stringify(log.data, null, 2));
+                      }}
+                      className="p-0.5 text-slate-500 hover:text-white rounded transition-colors"
+                      title="Copy response"
                     >
                       {copiedId === log.id ? (
                         <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -99,6 +118,15 @@ export const LogsPanel: React.FC<LogsPanelProps> = ({
           </div>
         )}
       </div>
+
+      {selectedLog && (
+        <LogDetailModal
+          log={selectedLog}
+          copied={copiedId === selectedLog.id}
+          onCopy={() => onCopyLog(selectedLog.id, JSON.stringify(selectedLog.data, null, 2))}
+          onClose={() => setSelectedLogId(null)}
+        />
+      )}
     </div>
   );
 };
