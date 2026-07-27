@@ -27,6 +27,7 @@ function App() {
   const [configs, setConfigs] = useState<SocketConfig[]>([]);
   const [currentConfigId, setCurrentConfigId] = useState<string | null>(null);
   const [serverUrl, setServerUrl] = useState('http://localhost:8080');
+  const [socketPath, setSocketPath] = useState('/socket.io');
   const [listeners, setListeners] = useState<ListenerConfig[]>([
     { id: 'default-listener', event: 'user_update', isActive: true },
   ]);
@@ -68,6 +69,7 @@ function App() {
       if (activeStateStr) {
         const activeState = JSON.parse(activeStateStr);
         if (activeState.serverUrl) setServerUrl(activeState.serverUrl);
+        if (activeState.socketPath) setSocketPath(activeState.socketPath);
         if (activeState.listeners) setListeners(activeState.listeners);
         if (activeState.emitters) setEmitters(activeState.emitters);
         if (activeState.currentConfigId) setCurrentConfigId(String(activeState.currentConfigId));
@@ -77,6 +79,7 @@ function App() {
           const config = loadedConfigs.find((c) => String(c.id) === currentId);
           if (config) {
             setServerUrl(config.serverUrl);
+            setSocketPath(config.path || '/socket.io');
             setListeners(config.listeners || []);
             setEmitters(config.emitters || []);
             setCurrentConfigId(currentId);
@@ -104,12 +107,13 @@ function App() {
     if (!isLoaded) return;
     const activeState = {
       serverUrl,
+      socketPath,
       listeners,
       emitters,
       currentConfigId,
     };
     localStorage.setItem('socket-dashboard-active-state', JSON.stringify(activeState));
-  }, [serverUrl, listeners, emitters, currentConfigId, isLoaded]);
+  }, [serverUrl, socketPath, listeners, emitters, currentConfigId, isLoaded]);
 
   const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -158,6 +162,7 @@ function App() {
 
     try {
       const socket = io(serverUrl, {
+        path: socketPath.trim() || undefined,
         transports: ['websocket', 'polling'],
         reconnectionAttempts: 5,
         timeout: 10000,
@@ -198,7 +203,7 @@ function App() {
       setErrorMessage(message);
       showToast(`Error: ${message}`, 'error');
     }
-  }, [serverUrl, listeners, showToast, addLog]);
+  }, [serverUrl, socketPath, listeners, showToast, addLog]);
 
   const handleDisconnect = useCallback(() => {
     if (socketRef.current) {
@@ -328,6 +333,7 @@ function App() {
       id: Date.now().toString(),
       name,
       serverUrl,
+      path: socketPath,
       listeners,
       emitters,
       createdAt: new Date().toISOString(),
@@ -337,18 +343,18 @@ function App() {
     setCurrentConfigId(newConfig.id);
     showToast(`Saved "${name}"`, 'success');
     return newConfig;
-  }, [serverUrl, listeners, emitters, showToast]);
+  }, [serverUrl, socketPath, listeners, emitters, showToast]);
 
   const updateConfig = useCallback((id: string, name: string) => {
     setConfigs((prev) =>
       prev.map((c) =>
         String(c.id) === id
-          ? { ...c, name, serverUrl, listeners, emitters, updatedAt: new Date().toISOString() }
+          ? { ...c, name, serverUrl, path: socketPath, listeners, emitters, updatedAt: new Date().toISOString() }
           : c
       )
     );
     showToast(`Updated "${name}"`, 'success');
-  }, [serverUrl, listeners, emitters, showToast]);
+  }, [serverUrl, socketPath, listeners, emitters, showToast]);
 
   const deleteConfig = useCallback((id: string) => {
     setConfigs((prev) => prev.filter((c) => String(c.id) !== id));
@@ -364,6 +370,7 @@ function App() {
     if (config) {
       setCurrentConfigId(id);
       setServerUrl(config.serverUrl);
+      setSocketPath(config.path || '/socket.io');
       setListeners(config.listeners || []);
       setEmitters(config.emitters || []);
       localStorage.setItem(CURRENT_CONFIG_KEY, id);
@@ -407,7 +414,7 @@ function App() {
       setConfigs((prev) =>
         prev.map((c) =>
           String(c.id) === currentConfigId
-            ? { ...c, serverUrl, listeners, emitters, updatedAt: new Date().toISOString() }
+            ? { ...c, serverUrl, path: socketPath, listeners, emitters, updatedAt: new Date().toISOString() }
             : c
         )
       );
@@ -416,11 +423,12 @@ function App() {
     } else {
       openSaveModal(true);
     }
-  }, [currentConfigId, serverUrl, listeners, emitters, configs, openSaveModal, showToast]);
+  }, [currentConfigId, serverUrl, socketPath, listeners, emitters, configs, openSaveModal, showToast]);
 
   const handleNewConfigClick = useCallback(() => {
     setCurrentConfigId(null);
     setServerUrl('http://localhost:8080');
+    setSocketPath('/socket.io');
     setListeners([
       { id: 'default-listener', event: 'user_update', isActive: true },
     ]);
@@ -533,6 +541,8 @@ function App() {
           showSettings={showSettings}
           serverUrl={serverUrl}
           onChangeServerUrl={setServerUrl}
+          socketPath={socketPath}
+          onChangeSocketPath={setSocketPath}
           connectionStatus={connectionStatus}
           errorMessage={errorMessage}
           listeners={listeners}

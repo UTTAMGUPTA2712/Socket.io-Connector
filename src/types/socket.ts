@@ -15,6 +15,7 @@ export interface SocketConfig {
   id: string;
   name: string;
   serverUrl: string;
+  path: string;
   listeners: ListenerConfig[];
   emitters: EmitterConfig[];
   createdAt: string;

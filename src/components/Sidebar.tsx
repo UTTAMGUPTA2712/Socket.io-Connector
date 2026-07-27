@@ -1,11 +1,13 @@
 import React from 'react';
-import { Save, FolderOpen, Server, Wifi, WifiOff, Radio, X, Plus } from 'lucide-react';
+import { Save, FolderOpen, Server, Wifi, WifiOff, Radio, X, Plus, Sliders } from 'lucide-react';
 import { ConnectionStatus, ListenerConfig } from '../types/socket';
 
 interface SidebarProps {
   showSettings: boolean;
   serverUrl: string;
   onChangeServerUrl: (url: string) => void;
+  socketPath: string;
+  onChangeSocketPath: (path: string) => void;
   connectionStatus: ConnectionStatus;
   errorMessage: string;
   listeners: ListenerConfig[];
@@ -27,6 +29,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   showSettings,
   serverUrl,
   onChangeServerUrl,
+  socketPath,
+  onChangeSocketPath,
   connectionStatus,
   errorMessage,
   listeners,
@@ -89,6 +93,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
             disabled={connectionStatus === 'connected'}
             className="w-full px-2.5 py-1.5 text-sm bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
             placeholder="http://localhost:8080"
+          />
+        </div>
+
+        {/* Socket Path Settings */}
+        <div className="space-y-2">
+          <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-400">
+            <Sliders className="w-3.5 h-3.5 text-blue-400" />
+            Socket Path
+          </label>
+          <input
+            type="text"
+            value={socketPath}
+            onChange={(e) => onChangeSocketPath(e.target.value)}
+            disabled={connectionStatus === 'connected'}
+            className="w-full px-2.5 py-1.5 text-sm bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
+            placeholder="/socket.io"
           />
         </div>
 

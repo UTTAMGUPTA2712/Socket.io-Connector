@@ -6,6 +6,7 @@ export const migrateConfig = (config: any): SocketConfig => {
     id: config.id ? String(config.id) : (Date.now().toString() + Math.random()),
     name: config.name || 'Unnamed Config',
     serverUrl: config.serverUrl || 'http://localhost:8080',
+    path: config.path || '/socket.io',
     listeners: Array.isArray(config.listeners)
       ? config.listeners
       : [
