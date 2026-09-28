@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How to Test a Socket.IO Server Online – Free Client Tester Guide</title>
+    <meta name="description" content="Step-by-step guide to testing a Socket.IO server in your browser: connect with a custom path, emit events with JSON payloads, listen to events and inspect real-time logs. No install needed." />
+    <meta name="author" content="Uttam Gupta" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#0f172a" />
+    <link rel="canonical" href="https://socket-io-connector.vercel.app/guide/" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="author" href="https://uttamgupta2712.is-a.dev/" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Socket.IO Connector" />
+    <meta property="og:url" content="https://socket-io-connector.vercel.app/guide/" />
+    <meta property="og:title" content="How to Test a Socket.IO Server Online" />
+    <meta property="og:description" content="Connect, emit events, listen and inspect real-time logs from your browser. A free Socket.IO client tester by Uttam Gupta." />
+    <meta property="og:image" content="https://socket-io-connector.vercel.app/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://socket-io-connector.vercel.app/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "TechArticle",
+            "headline": "How to Test a Socket.IO Server Online",
+            "url": "https://socket-io-connector.vercel.app/guide/",
+            "image": "https://socket-io-connector.vercel.app/og-image.png",
+            "dateModified": "2026-09-28",
+            "author": {
+              "@type": "Person",
+              "name": "Uttam Gupta",
+              "url": "https://uttamgupta2712.is-a.dev/"
+            },
+            "about": { "@type": "WebApplication", "name": "Socket.IO Connector", "url": "https://socket-io-connector.vercel.app/" }
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Is Socket.IO Connector free?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Yes. It runs entirely in your browser, needs no sign-up and no install." }
+              },
+              {
+                "@type": "Question",
+                "name": "Can I test a Socket.IO server running on localhost?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Yes. The connection is made directly from your browser, so a URL like http://localhost:3000 works as long as the server is running on your machine and its CORS settings allow the tester's origin." }
+              },
+              {
+                "@type": "Question",
+                "name": "Why does my connection fail with a CORS or timeout error?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Socket.IO v3 and later block cross-origin clients by default. Add https://socket-io-connector.vercel.app to the cors.origin option of your Socket.IO server, check that the server URL and path are correct, and make sure an https page is not connecting to a plain ws:// server that the browser blocks as mixed content." }
+              },
+              {
+                "@type": "Question",
+                "name": "Does it work with a custom Socket.IO path?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Yes. Set the Socket Path field to whatever your server uses, for example /api/socket.io instead of the default /socket.io." }
+              },
+              {
+                "@type": "Question",
+                "name": "Where are my configurations stored?",
+                "acceptedAnswer": { "@type": "Answer", "text": "In your browser's local storage. Nothing is sent to a third-party backend. You can export configurations to a JSON file and import them on another machine." }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+
+    <style>
+      :root { --bg: #0f172a; --surface: #1e293b; --border: #334155; --text: #e2e8f0; --muted: #94a3b8; --accent: #60a5fa; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.7 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+      main { max-width: 760px; margin: 0 auto; padding: 48px 20px 64px; }
+      a { color: var(--accent); }
+      h1 { font-size: 2.1rem; line-height: 1.25; margin: 0 0 12px; color: #fff; }
+      h2 { font-size: 1.4rem; margin: 44px 0 12px; color: #fff; }
+      h3 { font-size: 1.1rem; margin: 24px 0 6px; color: #fff; }
+      .lead { color: var(--muted); font-size: 1.1rem; }
+      .cta { display: inline-block; margin: 20px 0 8px; padding: 10px 20px; background: #2563eb; color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; }
+      .cta:hover { background: #1d4ed8; }
+      code, pre { font-family: ui-monospace, "JetBrains Mono", monospace; font-size: 0.9em; }
+      code { background: var(--surface); padding: 1px 6px; border-radius: 4px; }
+      pre { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; overflow-x: auto; }
+      pre code { background: none; padding: 0; }
+      nav, footer { font-size: 0.9rem; color: var(--muted); }
+      nav a, footer a { color: var(--muted); }
+      footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--border); }
+      li { margin: 4px 0; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav><a href="/">Socket.IO Connector</a> › Guide</nav>
+
+      <article>
+        <h1>How to Test a Socket.IO Server Online</h1>
+        <p class="lead">
+          Socket.IO Connector is a free, browser-based Socket.IO client tester. Point it at any server,
+          emit events with JSON payloads, listen for replies and watch every message in a live log,
+          with no Postman collection, no throwaway script and no install.
+        </p>
+        <a class="cta" href="/">Open the Socket.IO tester →</a>
+
+        <h2>Test your server in four steps</h2>
+        <ol>
+          <li><strong>Enter the server URL</strong>, for example <code>http://localhost:3000</code> or <code>https://api.example.com</code>.</li>
+          <li><strong>Set the socket path</strong> if your server doesn't use the default <code>/socket.io</code>.</li>
+          <li><strong>Add the events you want to listen to</strong> and toggle each one on or off while you test.</li>
+          <li><strong>Create emitters</strong> with an event name and a JSON payload, then send them with one click. Incoming and outgoing messages appear in the log with timestamps.</li>
+        </ol>
+
+        <h2>Features</h2>
+        <h3>Emit events with JSON payloads</h3>
+        <p>Keep a list of ready-to-send events, each with its own payload, so you can replay the same request without retyping it.</p>
+        <h3>Listen to any event</h3>
+        <p>Subscribe to as many event names as you need and switch them on or off without reconnecting.</p>
+        <h3>Real-time message log</h3>
+        <p>Every incoming and outgoing message is logged with its direction and time. Open any entry to inspect the full payload.</p>
+        <h3>Saved configurations</h3>
+        <p>Save a server, its path, listeners and emitters as a named configuration. Switch between projects in seconds, and export or import configurations as JSON to share them with your team.</p>
+        <h3>WebSocket with polling fallback</h3>
+        <p>The client connects over WebSocket and falls back to HTTP long-polling, just like a production Socket.IO client.</p>
+
+        <h2>Allow the tester in your server's CORS settings</h2>
+        <p>Since Socket.IO v3, servers reject cross-origin browser clients unless you allow them. Add the tester's origin while you develop:</p>
+        <pre><code>const io = new Server(httpServer, {
+  cors: {
+    origin: ["http://localhost:5173", "https://socket-io-connector.vercel.app"],
+  },
+});</code></pre>
+
+        <h2>Frequently asked questions</h2>
+        <h3>Is Socket.IO Connector free?</h3>
+        <p>Yes. It runs entirely in your browser, needs no sign-up and no install.</p>
+        <h3>Can I test a Socket.IO server running on localhost?</h3>
+        <p>Yes. The connection is made directly from your browser, so a URL like <code>http://localhost:3000</code> works as long as the server is running on your machine and its CORS settings allow the tester's origin.</p>
+        <h3>Why does my connection fail with a CORS or timeout error?</h3>
+        <p>Socket.IO v3 and later block cross-origin clients by default. Add <code>https://socket-io-connector.vercel.app</code> to the <code>cors.origin</code> option of your Socket.IO server, check that the server URL and path are correct, and make sure an https page is not connecting to a plain <code>ws://</code> server that the browser blocks as mixed content.</p>
+        <h3>Does it work with a custom Socket.IO path?</h3>
+        <p>Yes. Set the Socket Path field to whatever your server uses, for example <code>/api/socket.io</code> instead of the default <code>/socket.io</code>.</p>
+        <h3>Where are my configurations stored?</h3>
+        <p>In your browser's local storage. Nothing is sent to a third-party backend. You can export configurations to a JSON file and import them on another machine.</p>
+
+        <a class="cta" href="/">Start testing your Socket.IO server →</a>
+      </article>
+
+      <footer>
+        Built by <a href="https://uttamgupta2712.is-a.dev/" rel="author">Uttam Gupta</a>, backend &amp; distributed systems engineer ·
+        <a href="https://github.com/UTTAMGUPTA2712/Socket.io-Connector">Source on GitHub</a>
+      </footer>
+    </main>
+  </body>
+</html>

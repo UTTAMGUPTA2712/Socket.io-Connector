@@ -52,12 +52,29 @@ export const Header: React.FC<HeaderProps> = ({
         )}
       </div>
       <div className="flex items-center gap-3">
+        <a
+          href="/guide/"
+          className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+          title="How to test a Socket.IO server"
+        >
+          Guide
+        </a>
+        <a
+          href="https://uttamgupta2712.is-a.dev/"
+          target="_blank"
+          rel="noopener author"
+          className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+          title="Uttam Gupta – Portfolio"
+        >
+          by Uttam Gupta
+        </a>
         <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full ${statusConfig.bg}/20`}>
           <StatusIcon className={`w-3.5 h-3.5 ${statusConfig.color}`} />
           <span className={`text-xs font-medium ${statusConfig.color}`}>{statusConfig.text}</span>
         </div>
         <button
           onClick={onToggleSettings}
+          aria-label="Toggle settings"
           className="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors"
         >
           <Settings className={`w-4 h-4 ${showSettings ? 'text-blue-400' : ''}`} />
